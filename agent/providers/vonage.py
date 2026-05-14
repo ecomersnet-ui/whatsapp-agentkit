@@ -71,32 +71,44 @@ class ProveedorVonage(ProveedorWhatsApp):
             True si se envió exitosamente, False en caso contrario
         """
         try:
+            # Releer variables en cada envío (por si se cargaron después del init)
+            api_key = os.getenv("VONAGE_API_KEY") or self.api_key
+            api_secret = os.getenv("VONAGE_API_SECRET") or self.api_secret
+            brand = os.getenv("VONAGE_BRAND") or self.vonage_brand
+
+            if not api_key or not api_secret:
+                logger.error(f"Vonage no configurado. KEY={api_key}, SECRET={'***' if api_secret else None}")
+                return False
+
             payload = {
                 "to": telefono,
-                "from": self.vonage_brand,
+                "from": brand,
                 "message_type": "text",
                 "text": texto,
-                "channel": "whatsapp",
-                "message_status": "submitted"
+                "channel": "whatsapp"
             }
+
+            logger.info(f"Enviando a Vonage: to={telefono}, from={brand}")
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{self.base_url}/v1/messages",
                     json=payload,
-                    auth=(self.api_key, self.api_secret),
-                    timeout=10.0
+                    auth=(api_key, api_secret),
+                    timeout=15.0
                 )
 
-                if response.status_code == 202:
-                    logger.info(f"Mensaje enviado a {telefono}")
+                logger.info(f"Vonage response: {response.status_code} - {response.text[:200]}")
+
+                if response.status_code in (200, 202):
+                    logger.info(f"Mensaje enviado exitosamente a {telefono}")
                     return True
                 else:
-                    logger.error(f"Error enviando mensaje: {response.text}")
+                    logger.error(f"Error Vonage {response.status_code}: {response.text}")
                     return False
 
         except Exception as e:
-            logger.error(f"Error en enviar_mensaje (Vonage): {e}")
+            logger.error(f"Error en enviar_mensaje (Vonage): {e}", exc_info=True)
             return False
 
     def validar_webhook(self, request_data: dict) -> bool:
