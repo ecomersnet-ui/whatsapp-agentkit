@@ -40,7 +40,13 @@ app = FastAPI(
 
 @app.get("/")
 async def health_check():
-    return {"status": "ok", "service": "agentkit"}
+    vonage_key = os.getenv("VONAGE_API_KEY", "NOT_SET")
+    return {
+        "status": "ok",
+        "service": "agentkit",
+        "provider": os.getenv("WHATSAPP_PROVIDER", "NOT_SET"),
+        "vonage_configured": bool(vonage_key and vonage_key != "NOT_SET")
+    }
 
 
 @app.get("/webhook")
