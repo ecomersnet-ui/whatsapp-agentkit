@@ -1,126 +1,129 @@
 # PUNTO DE RETOMA - PolarTech WhatsApp Bot
 
 **Fecha de pausa:** 2026-05-14  
-**Estado:** 95% COMPLETADO
+**Estado:** ✅ BOT 100% FUNCIONAL EN WHATSAPP
 
 ---
 
-## ✅ LO QUE FUNCIONA AL 100%
+## ✅ TODO FUNCIONA AL 100%
 
 | Componente | Estado |
 |-----------|--------|
 | Bot Railway Online | ✅ Corriendo |
 | Claude AI | ✅ Genera respuestas perfectas |
 | Webhook recibe mensajes | ✅ Funciona |
+| Vonage envía a WhatsApp | ✅ 202 Accepted |
+| Números Argentina (AR) | ✅ Normalización automática |
 | Base de datos | ✅ Guarda historial |
-| Variables Railway | ✅ Configuradas |
-| GitHub sincronizado | ✅ Actualizado |
+| Chat Web | ✅ Funcionando |
 
 **URL del bot:**
 ```
 https://whatsapp-agentkit-production-1f16.up.railway.app
 ```
 
-**Test rápido de que está vivo:**
-```bash
-curl https://whatsapp-agentkit-production-1f16.up.railway.app/
-# Debe responder: {"status":"ok","provider":"vonage","vonage_configured":true}
+**Chat Web (para sitio web):**
+```
+https://whatsapp-agentkit-production-1f16.up.railway.app/chat
 ```
 
 ---
 
-## 🔴 ÚNICO PASO PENDIENTE
+## 📱 CÓMO USAR EL BOT AHORA (Sandbox)
 
-### Credenciales incorrectas de Vonage
+1. Desde WhatsApp enviar al **+14157386102**:
+   ```
+   Join pork coach
+   ```
+2. Recibir confirmación "Thank you! Your number is now set up..."
+3. Escribir cualquier mensaje → el bot responde automáticamente
 
-**Problema:** El bot usa `VONAGE_API_KEY=36a26e86` pero Vonage responde `401 Unauthorized`.
-
-**Causa:** `36a26e86` es el **Application ID**, no el API Key real.
-
-**Solución:**
-1. Abrir: `https://dashboard.vonage.com` (página HOME)
-2. Buscar el bloque con **API key** y **API secret**
-3. Dar esos valores al asistente
-4. El asistente actualiza Railway con los valores correctos (2 minutos)
-
-**Diferencia:**
-```
-INCORRECTO (lo que tenemos): Application ID = 36a26e86
-CORRECTO (lo que necesitamos): API Key = (número de 8 caracteres del HOME del dashboard)
-```
+**⚠️ IMPORTANTE:** La whitelist del sandbox expira cada cierto tiempo.  
+Si el bot no responde, volver a enviar `Join pork coach` al +14157386102.
 
 ---
 
-## CREDENCIALES ACTUALES EN RAILWAY
+## 🔧 FIXES APLICADOS EN ESTA SESIÓN
+
+### 1. Normalización números Argentina
+- Problema: Vonage enviaba `541130003552` pero WhatsApp requiere `5491130003552` (con el 9)
+- Fix: `normalizar_telefono_argentina()` en `agent/providers/vonage.py`
+- Deployed: ✅ Commit `570b993`
+
+### 2. Número FROM del sandbox
+- Problema: Usaba `polartech` como remitente → 403 Forbidden
+- Fix: Ahora usa `14157386102` (número sandbox de Vonage)
+- Variable Railway: `VONAGE_FROM_NUMBER=14157386102` ✅
+
+### 3. URL Webhook del Sandbox
+- Problema: Estaba apuntando a `https://www.vonage.com` (!)
+- Fix: Usuario actualizó en dashboard.vonage.com/messages/sandbox → Webhooks
+- URLs correctas:
+  - Inbound: `https://whatsapp-agentkit-production-1f16.up.railway.app/webhook`
+  - Status: `https://whatsapp-agentkit-production-1f16.up.railway.app/webhook/status`
+
+---
+
+## 📋 PRÓXIMOS PASOS (cuando regreses)
+
+### Opción A: Poner chat en sitio web (30 min)
+Agregar un botón/widget en la web que abra:
+```
+https://whatsapp-agentkit-production-1f16.up.railway.app/chat
+```
+
+### Opción B: Usar número propio de WhatsApp (3-7 días)
+Para que el bot responda desde el número de PolarTech (+541130003552):
+1. Registrar el número en Meta WhatsApp Business API
+2. Requiere verificación de negocio en Facebook Business
+3. URL: https://developers.facebook.com/docs/whatsapp/cloud-api/get-started
+
+---
+
+## VARIABLES EN RAILWAY (completas)
 
 ```
-VONAGE_API_KEY=36a26e86       ← ESTA HAY QUE CAMBIAR
-VONAGE_API_SECRET=vSUc0q0Xb8Gmm6is  ← Esta puede estar bien o también cambiar
-VONAGE_BRAND=polartech
+ANTHROPIC_API_KEY=(ver en Railway dashboard - no guardar aquí)
 WHATSAPP_PROVIDER=vonage
-ENVIRONMENT=production
+VONAGE_API_KEY=36a26e86
+VONAGE_API_SECRET=(ver en Railway dashboard)
+VONAGE_BRAND=polartech
+VONAGE_FROM_NUMBER=14157386102
 PORT=8000
-ANTHROPIC_API_KEY=(la nueva key generada el 14/05/2026)
+ENVIRONMENT=production
 DATABASE_URL=sqlite+aiosqlite:///./agentkit.db
 ```
 
 ---
 
-## RAILWAY CLI (para cuando retomes)
+## RAILWAY CLI (si necesitás revisar logs)
 
-Token de acceso guardado (válido):
-```
-RAILWAY_API_TOKEN=2594c4a7-ba14-4e6f-9897-40af1749b5c0
-```
-
-Comandos útiles:
 ```bash
-cd C:\Users\empre\whatsapp-agentkit
-
-# Ver logs
-RAILWAY_API_TOKEN=2594c4a7-ba14-4e6f-9897-40af1749b5c0 railway logs --tail 20
-
-# Actualizar variable
-RAILWAY_API_TOKEN=2594c4a7-ba14-4e6f-9897-40af1749b5c0 railway variables set VONAGE_API_KEY=NUEVA_KEY
-
-# Ver variables
-RAILWAY_API_TOKEN=2594c4a7-ba14-4e6f-9897-40af1749b5c0 railway variables
+# En PowerShell (como Administrador o con bypass):
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+$env:RAILWAY_API_TOKEN="(tu token de Railway)"
+Set-Location "C:\Users\empre\whatsapp-agentkit"
+railway logs --tail 30
 ```
 
 ---
 
-## CUANDO REGRESES: 3 PASOS (5 minutos total)
+## VERIFICACIÓN RÁPIDA AL RETOMAR
 
-### Paso 1: Obtener API Key correcta de Vonage
-```
-Ir a: https://dashboard.vonage.com (HOME)
-Copiar: API key y API secret del bloque principal
-```
+```powershell
+# 1. Verificar que bot sigue online
+Invoke-WebRequest -Uri "https://whatsapp-agentkit-production-1f16.up.railway.app/" -UseBasicParsing
 
-### Paso 2: Actualizar Railway (automático)
-```bash
-RAILWAY_API_TOKEN=2594c4a7-ba14-4e6f-9897-40af1749b5c0 railway variables set VONAGE_API_KEY=TU_KEY_REAL VONAGE_API_SECRET=TU_SECRET_REAL
-```
-
-### Paso 3: También registrar número en Sandbox Vonage
-```
-Ir a: https://dashboard.vonage.com/messages/sandbox
-Agregar tu número: +541130003552
-Enviar desde tu WhatsApp al número de sandbox: "join [palabra-que-te-dan]"
-```
-
-### Paso 4: Test final
-```
-Enviar WhatsApp al número de Vonage
-Verificar que el bot responde
+# 2. Probar chat web
+# Abrir en navegador: https://whatsapp-agentkit-production-1f16.up.railway.app/chat
 ```
 
 ---
 
-## ARQUITECTURA TÉCNICA (para contexto)
+## ARQUITECTURA TÉCNICA
 
 ```
-Tu WhatsApp → Vonage → Railway (FastAPI) → Claude AI → Vonage → Tu WhatsApp
+Tu WhatsApp → Vonage Sandbox (+14157386102) → Railway (FastAPI) → Claude AI → Vonage → Tu WhatsApp
 ```
 
 - **Framework:** FastAPI + SQLAlchemy + SQLite
@@ -131,16 +134,9 @@ Tu WhatsApp → Vonage → Railway (FastAPI) → Claude AI → Vonage → Tu Wha
 
 ---
 
-## VERIFICACIÓN RÁPIDA AL RETOMAR
+## 🔐 SEGURIDAD PENDIENTE
 
-```bash
-# 1. Verificar que bot sigue online
-curl https://whatsapp-agentkit-production-1f16.up.railway.app/
-
-# 2. Test del webhook
-curl -X POST https://whatsapp-agentkit-production-1f16.up.railway.app/webhook \
-  -H "Content-Type: application/json" \
-  -d '{"message_uuid":"test","from":"541130003552","to":"14155552671","text":"hola","channel":"whatsapp","message_type":"whatsapp"}'
-```
-
-Ambos deben responder con `{"status":"ok"}`
+- [ ] Regenerar ANTHROPIC_API_KEY (fue compartida en conversaciones anteriores)
+  - Ir a: https://platform.anthropic.com/settings/api-keys
+  - Crear nueva key y actualizar en Railway
+- [ ] Rotar RAILWAY_API_TOKEN si ya no se necesita
