@@ -6,13 +6,12 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
-from dotenv import load_dotenv
 
 from agent.brain import generar_respuesta
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers import obtener_proveedor
 
-load_dotenv()
+# load_dotenv() no funciona en Railway - variables vienen del sistema
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 log_level = logging.DEBUG if ENVIRONMENT == "development" else logging.INFO
@@ -46,35 +45,48 @@ async def health_check():
 
 @app.get("/webhook")
 async def webhook_verificacion(request: Request):
-    resultado = await proveedor.validar_webhook(request)
-    if resultado is not None:
-        return PlainTextResponse(str(resultado))
-    return {"status": "ok"}
+    """Verificación de webhook (GET)"""
+    return {"status": "ok", "service": "agentkit-webhook"}
 
 
 @app.post("/webhook")
 async def webhook_handler(request: Request):
+    """Manejador de mensajes entrantes desde Vonage"""
     try:
-        mensajes = await proveedor.parsear_webhook(request)
+        # Parsear JSON del request
+        data = await request.json()
 
-        for msg in mensajes:
-            if msg.es_propio or not msg.texto:
-                continue
+        logger.info(f"Webhook recibido: {data}")
 
-            logger.info(f"Mensaje de {msg.telefono}: {msg.texto}")
+        # Validar webhook
+        if not proveedor.validar_webhook(data):
+            logger.warning(f"Webhook inválido: {data}")
+            return {"status": "invalid"}
 
-            historial = await obtener_historial(msg.telefono)
-            respuesta = await generar_respuesta(msg.texto, historial)
+        # Parsear mensaje
+        mensaje = proveedor.parsear_webhook(data)
 
-            await guardar_mensaje(msg.telefono, "user", msg.texto)
-            await guardar_mensaje(msg.telefono, "assistant", respuesta)
+        # Ignorar mensajes propios o sin texto
+        if mensaje.es_propio or not mensaje.texto:
+            return {"status": "ignored"}
 
-            await proveedor.enviar_mensaje(msg.telefono, respuesta)
+        logger.info(f"Mensaje de {mensaje.telefono}: {mensaje.texto}")
 
-            logger.info(f"Respuesta a {msg.telefono}: {respuesta}")
+        # Obtener historial y generar respuesta
+        historial = await obtener_historial(mensaje.telefono)
+        respuesta = await generar_respuesta(mensaje.texto, historial)
+
+        # Guardar mensajes en BD
+        await guardar_mensaje(mensaje.telefono, "user", mensaje.texto)
+        await guardar_mensaje(mensaje.telefono, "assistant", respuesta)
+
+        # Enviar respuesta
+        await proveedor.enviar_mensaje(mensaje.telefono, respuesta)
+
+        logger.info(f"Respuesta enviada a {mensaje.telefono}: {respuesta}")
 
         return {"status": "ok"}
 
     except Exception as e:
-        logger.error(f"Error en webhook: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error en webhook: {type(e).__name__}: {e}", exc_info=True)
+        return {"status": "error", "message": str(e)}
