@@ -90,17 +90,18 @@ Error: "Your credit balance is too low to access the Anthropic API"
 
 ---
 
-## 🔐 Credenciales Configuradas
+## 🔐 Configuración de Credenciales
 
-| Variable | Estado | Nota |
-|----------|--------|------|
-| `WHATSAPP_PROVIDER` | ✅ | twilio |
-| `TWILIO_ACCOUNT_SID` | ✅ | Configurado en .env (no subir a GitHub) |
-| `TWILIO_AUTH_TOKEN` | ✅ | Configurado en .env (no subir a GitHub) |
-| `TWILIO_PHONE_NUMBER` | ✅ | +541130003552 |
-| `ANTHROPIC_API_KEY` | ✅ | Configurado en .env (no subir a GitHub) |
+✅ **Todas las credenciales están configuradas en `.env`**
 
-⚠️ **IMPORTANTE:** Las credenciales sensibles NO se incluyen en este archivo. Están en `.env` local que es ignorado por git.
+Los siguientes valores están guardados SOLO en `.env` (no en GitHub):
+- `ANTHROPIC_API_KEY` - API key de Claude
+- `WHATSAPP_PROVIDER` - Proveedor de WhatsApp
+- `TWILIO_ACCOUNT_SID` - Twilio SID
+- `TWILIO_AUTH_TOKEN` - Twilio Token
+- `TWILIO_PHONE_NUMBER` - Número de teléfono
+
+⚠️ **IMPORTANTE:** El archivo `.env` está en `.gitignore` y NUNCA se sube a GitHub por seguridad.
 
 ---
 
