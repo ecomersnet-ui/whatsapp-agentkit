@@ -10,9 +10,10 @@
 |------|--------|----------|
 | **Fase 1: Verificación de Ambiente** | ✅ Completada | Python 3.12.1, carpetas creadas, dependencias instaladas |
 | **Fase 2: Entrevista de Negocio** | ✅ Completada | Datos de PolarTech SRL, configuración en business.yaml |
-| **Fase 3: Generación del Agente** | ✅ Completada | 12 archivos creados, credenciales Twilio en .env |
-| **Fase 4: Testing Local** | ⏳ **BLOQUEADO** | Falta agregar créditos a Anthropic |
-| **Fase 5: Deploy a Railway** | ⏹️ Pendiente | Se hará después de Phase 4 |
+| **Fase 3: Generación del Agente** | ✅ Completada | 12 archivos creados, Vonage configurado en .env |
+| **Fase 4: Configuración Vonage** | ✅ Completada | Credenciales Vonage en .env, webhooks configurados en dashboard |
+| **Fase 5: Deploy a Railway** | ⏳ **EN PROGRESO** | Variables de entorno pendientes + test webhook |
+| **Fase 6: Testing Local** | ⏹️ Pendiente | Después de Railway funcione |
 
 ---
 
@@ -40,37 +41,24 @@
 
 ---
 
-## ⏳ Bloqueador Actual
+## ⏳ Paso Siguiente Crítico
 
-**FASE 4 NO FUNCIONA**: El test local falla porque la cuenta de Anthropic no tiene créditos.
+**RAILWAY:** Necesita las variables de entorno de Vonage
 
-```
-Error: "Your credit balance is too low to access the Anthropic API"
-```
+### Instrucciones para Railway (COPY-PASTE):
 
-### Solución para cuando regreses:
-
-1. **Agrega créditos a Anthropic:**
-   - Ir a: https://platform.anthropic.com/account/billing/overview
-   - Agregar al menos $5 USD
-   - Confirmar la compra
-
-2. **Regenera la API key:**
-   - Ir a: https://platform.anthropic.com/settings/api-keys
-   - Crear una nueva API key
-   - Compartirla para actualizar `.env`
-
-3. **Ejecuta el test local:**
-   ```bash
-   cd C:\Users\empre\whatsapp-agentkit
-   python tests/test_local.py
+1. **Ir a:** https://railway.app/dashboard
+2. **Seleccionar proyecto:** whatsapp-agentkit
+3. **Variables a agregar/actualizar:**
    ```
+   VONAGE_API_KEY=36a26e86
+   VONAGE_API_SECRET=vSUc0q0Xb8Gmm6is
+   WHATSAPP_PROVIDER=vonage
+   ```
+4. **Guardar y esperar 2-3 minutos** (auto-redeploy)
+5. **Verificar:** Ir a Deployments tab, ver que el nuevo deploy esté en "Success" (✅ verde)
 
-4. **Prueba mensajes:**
-   - "¿Qué servicios ofrecen?"
-   - "Quiero agendar una cita"
-   - "limpiar" (para limpiar historial)
-   - "salir" (para terminar)
+⚠️ **IMPORTANTE:** Si Railway muestra error 5xx después, revisar Logs tab para diagnosticar
 
 ---
 
@@ -115,12 +103,40 @@ Los siguientes valores están guardados SOLO en `.env` (no en GitHub):
 
 ---
 
-## 📞 Resumen Rápido
+## 🚀 PRÓXIMOS 5 MINUTOS (CRÍTICO)
+
+### 1️⃣ RAILWAY - ACTUALIZAR VARIABLES (1 min)
+```
+https://railway.app/dashboard
+→ whatsapp-agentkit project
+→ Variables tab
+→ AGREGAR:
+  VONAGE_API_KEY=36a26e86
+  VONAGE_API_SECRET=vSUc0q0Xb8Gmm6is
+  WHATSAPP_PROVIDER=vonage
+→ Guardar y esperar redeploy (2-3 min)
+```
+
+### 2️⃣ API KEY SEGURIDAD (HACER DESPUÉS)
+Tu API key actual está expuesta. Después que Railway funcione:
+```
+1. https://platform.anthropic.com/settings/api-keys
+2. Crear NUEVA API key
+3. Actualizar en .env y Railway
+4. Eliminar la key vieja
+```
+
+### 3️⃣ TEST FINAL
+Enviar un mensaje WhatsApp a tu número de Vonage y verificar que el bot responde.
+
+---
+
+## 📞 Resumen Técnico
 
 **Bot:** Polartech-chat-bot  
 **Modelo:** claude-sonnet-4-6  
-**Proveedor:** Twilio WhatsApp  
+**Proveedor:** Vonage (Argentina) ✅  
+**Webhooks:** Configurados ✅  
 **Database:** SQLite (local) / PostgreSQL (producción)  
 **Framework:** FastAPI + SQLAlchemy  
-
-¡Buen franco! 🎉 Todo está listo para cuando regreses.
+**Status:** ⏳ ESPERANDO RAILWAY REDEPLOY
