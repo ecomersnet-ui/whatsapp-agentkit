@@ -92,13 +92,15 @@ Error: "Your credit balance is too low to access the Anthropic API"
 
 ## 🔐 Credenciales Configuradas
 
-| Variable | Valor | Estado |
-|----------|-------|--------|
-| `WHATSAPP_PROVIDER` | twilio | ✅ |
-| `TWILIO_ACCOUNT_SID` | AC24d09a81d831b27926456fdf0f007caa | ✅ |
-| `TWILIO_AUTH_TOKEN` | 80dfcc5f22e30c91c4c067972d870818 | ✅ |
-| `TWILIO_PHONE_NUMBER` | +541130003552 | ✅ |
-| `ANTHROPIC_API_KEY` | Última: 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 | ⏳ Necesita créditos |
+| Variable | Estado | Nota |
+|----------|--------|------|
+| `WHATSAPP_PROVIDER` | ✅ | twilio |
+| `TWILIO_ACCOUNT_SID` | ✅ | Configurado en .env (no subir a GitHub) |
+| `TWILIO_AUTH_TOKEN` | ✅ | Configurado en .env (no subir a GitHub) |
+| `TWILIO_PHONE_NUMBER` | ✅ | +541130003552 |
+| `ANTHROPIC_API_KEY` | ✅ | Configurado en .env (no subir a GitHub) |
+
+⚠️ **IMPORTANTE:** Las credenciales sensibles NO se incluyen en este archivo. Están en `.env` local que es ignorado por git.
 
 ---
 
