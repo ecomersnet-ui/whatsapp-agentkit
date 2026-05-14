@@ -27,10 +27,29 @@ class ProveedorVonage(ProveedorWhatsApp):
         self.api_key = os.getenv("VONAGE_API_KEY")
         self.api_secret = os.getenv("VONAGE_API_SECRET")
         self.vonage_brand = os.getenv("VONAGE_BRAND", "polartech")
+        # Para sandbox usa el número de Vonage; en producción usa el brand/número propio
+        self.vonage_from = os.getenv("VONAGE_FROM_NUMBER", "14157386102")
         self.base_url = "https://messages-sandbox.nexmo.com"
 
         if not self.api_key or not self.api_secret:
             logger.error("VONAGE_API_KEY o VONAGE_API_SECRET no configuradas")
+
+    @staticmethod
+    def normalizar_telefono_argentina(telefono: str) -> str:
+        """
+        Normaliza números argentinos al formato E.164 para WhatsApp.
+        Argentina: +54 9 XX XXXX-XXXX → 549XXXXXXXXXX
+        El 9 es obligatorio para números móviles en WhatsApp.
+        Ejemplos:
+          541130003552  → 5491130003552
+          5491130003552 → 5491130003552 (sin cambio)
+        """
+        numero = telefono.strip().lstrip("+")
+        # Si empieza con 54 y NO tiene el 9 después (longitud 12 en vez de 13)
+        if numero.startswith("54") and len(numero) == 12 and not numero.startswith("549"):
+            numero = "549" + numero[2:]
+            logger.info(f"Número normalizado (AR): {telefono} → {numero}")
+        return numero
 
     def parsear_webhook(self, data: dict) -> MensajeEntrante:
         """
@@ -49,8 +68,12 @@ class ProveedorVonage(ProveedorWhatsApp):
         }
         """
         try:
+            # Vonage sandbox puede enviar el número con o sin 9 (formato argentino)
+            # Lo normalizamos al formato WhatsApp correcto
+            from_number = data.get("from", "")
+            from_normalized = self.normalizar_telefono_argentina(from_number)
             return MensajeEntrante(
-                telefono=data.get("from", ""),
+                telefono=from_normalized,
                 texto=data.get("text", ""),
                 mensaje_id=data.get("message_uuid", ""),
                 es_propio=False
@@ -74,21 +97,24 @@ class ProveedorVonage(ProveedorWhatsApp):
             # Releer variables en cada envío (por si se cargaron después del init)
             api_key = os.getenv("VONAGE_API_KEY") or self.api_key
             api_secret = os.getenv("VONAGE_API_SECRET") or self.api_secret
-            brand = os.getenv("VONAGE_BRAND") or self.vonage_brand
+            from_number = os.getenv("VONAGE_FROM_NUMBER") or self.vonage_from
 
             if not api_key or not api_secret:
                 logger.error(f"Vonage no configurado. KEY={api_key}, SECRET={'***' if api_secret else None}")
                 return False
 
+            # Normalizar número destinatario (fix para Argentina: insertar 9)
+            telefono_normalizado = self.normalizar_telefono_argentina(telefono)
+
             payload = {
-                "to": telefono,
-                "from": brand,
+                "to": telefono_normalizado,
+                "from": from_number,
                 "message_type": "text",
                 "text": texto,
                 "channel": "whatsapp"
             }
 
-            logger.info(f"Enviando a Vonage: to={telefono}, from={brand}")
+            logger.info(f"Enviando a Vonage: to={telefono_normalizado} (original={telefono}), from={from_number}")
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(
