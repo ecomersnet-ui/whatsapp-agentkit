@@ -14,5 +14,8 @@ def obtener_proveedor() -> ProveedorWhatsApp:
     elif proveedor == "meta":
         from agent.providers.meta import ProveedorMeta
         return ProveedorMeta()
+    elif proveedor == "vonage":
+        from agent.providers.vonage import ProveedorVonage
+        return ProveedorVonage()
     else:
-        raise ValueError(f"WHATSAPP_PROVIDER no válido. Usa 'twilio' o 'meta'")
+        raise ValueError(f"WHATSAPP_PROVIDER no válido. Usa 'twilio', 'meta' o 'vonage'")
