@@ -164,6 +164,17 @@ async def webhook_verificacion(request: Request):
     return {"status": "ok", "service": "agentkit-webhook"}
 
 
+@app.post("/webhook/status")
+async def webhook_status(request: Request):
+    """Estado de mensajes enviados (Vonage delivery receipts)"""
+    try:
+        data = await request.json()
+        logger.info(f"Status webhook: {data.get('status','?')} msg={data.get('message_uuid','?')}")
+    except Exception:
+        pass
+    return {"status": "ok"}
+
+
 @app.post("/webhook")
 async def webhook_handler(request: Request):
     """Manejador de mensajes entrantes desde Vonage"""
@@ -221,13 +232,25 @@ async def admin_dashboard():
         ultimo = c["ultimo"].strftime("%d/%m %H:%M") if c["ultimo"] else "-"
         preview = c["ultimo_mensaje"].replace("<", "&lt;").replace(">", "&gt;")
         badge = "🟢" if c["ultimo_role"] == "assistant" else "🔵"
-        clientes_html += f"""
-        <tr onclick="verChat('{numero}')" style="cursor:pointer">
-            <td><span style="font-family:monospace;font-size:13px">+{numero}</span></td>
-            <td style="text-align:center">{c['total']}</td>
-            <td>{ultimo}</td>
-            <td style="color:#888;font-size:13px">{badge} {preview}...</td>
-        </tr>"""
+        total = c["total"]
+        clientes_html += (
+            f"<tr onclick=\"verChat('{numero}')\" style=\"cursor:pointer\">"
+            f"<td><span style=\"font-family:monospace;font-size:13px\">+{numero}</span></td>"
+            f"<td style=\"text-align:center\">{total}</td>"
+            f"<td>{ultimo}</td>"
+            f"<td style=\"color:#888;font-size:13px\">{badge} {preview}...</td>"
+            f"</tr>"
+        )
+
+    if clientes:
+        tabla_html = (
+            "<table><thead><tr>"
+            "<th>Número</th><th style=\"text-align:center\">Msgs</th>"
+            "<th>Último contacto</th><th>Último mensaje</th>"
+            f"</tr></thead><tbody>{clientes_html}</tbody></table>"
+        )
+    else:
+        tabla_html = '<p class="empty">No hay conversaciones todavía.</p>'
 
     html = f"""<!DOCTYPE html>
 <html lang="es">
@@ -290,13 +313,7 @@ async def admin_dashboard():
 
 <div class="section">
   <h2>💬 Conversaciones ({len(clientes)} clientes)</h2>
-  {'<p class="empty">No hay conversaciones todavía.</p>' if not clientes else f"""
-  <table>
-    <thead><tr>
-      <th>Número</th><th style="text-align:center">Msgs</th><th>Último contacto</th><th>Último mensaje</th>
-    </tr></thead>
-    <tbody>{clientes_html}</tbody>
-  </table>"""}
+  {tabla_html}
 </div>
 
 <!-- Modal conversación -->
