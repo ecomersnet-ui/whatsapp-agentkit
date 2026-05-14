@@ -1,9 +1,9 @@
 # Estado del Proyecto - Polartech-Chat-Bot
 
-**Última actualización:** 2026-05-14  
+**Última actualización:** 2026-05-14 - PAUSA ACTIVA  
 **Usuario:** ecomersnet@gmail.com  
 **Negocio:** PolarTech SRL  
-**Status:** ✅ **BOT 100% FUNCIONAL - LOCAL Y CLOUD**
+**Status:** 🟡 **95% COMPLETADO — 1 PASO FINAL PENDIENTE**
 
 ## Progreso General
 
