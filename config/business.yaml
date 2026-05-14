@@ -1,0 +1,30 @@
+# Configuración del negocio — Generado por AgentKit
+negocio:
+  nombre: "PolarTech SRL"
+  descripcion: |
+    PolarTech SRL es una empresa dedicada a brindar servicios integrales de
+    mantenimiento y acabados en revestimientos y construcción.
+
+    Nuestras áreas de especialidad:
+    - Pintura: interiores y exteriores con acabados de alta calidad
+    - Sistemas Durlock: montajes y reparaciones de tabiques, cielorrasos y estructuras ligeras
+    - Pisos: colocación y reparación de cerámicos, porcelanatos, maderas y recubrimientos vinílicos
+    - Iluminación: instalaciones, reparaciones y mejoras en sistemas funcionales y decorativos
+
+    Atendemos a particulares, empresas, administradores de edificios y profesionales del sector.
+    Ofrecemos soluciones prácticas y de calidad para espacios residenciales, comerciales e industriales.
+  horario: "24/7"
+
+agente:
+  nombre: "Polartech-chat-bot"
+  tono: "Vendedor y persuasivo"
+  casos_de_uso:
+    - "Responder preguntas frecuentes"
+    - "Agendar citas o reservaciones"
+    - "Calificar y atender leads / ventas"
+    - "Tomar pedidos"
+    - "Soporte post-venta"
+
+metadata:
+  creado: "2026-05-13"
+  version: "1.0"
